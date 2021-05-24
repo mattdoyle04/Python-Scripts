@@ -3,11 +3,15 @@ class ElliotWave:
     
     def __init__(self, df=None):
         
+        self.potential_waves = []
         self.reset()
+        self.bars = df
         self.rows = df.shape[0]
         
     
     def reset(self):
+        
+        self.start_date = None
         
         self.wave_1 = False
         self.wave_1_start = None
@@ -31,8 +35,8 @@ class ElliotWave:
         self.correction_2 = False
     
         self.elliott_wave = False
-
         
+
     def wave_length(self, end, start):
         
         return (end - start) / start
@@ -84,13 +88,13 @@ class ElliotWave:
                     if self.wave_1:
 
                         if up:
-                            print('{} - WAVE 1 - UP - {}'.format(date, close))
+                            self.wave_1_high = high
+                            print('{} - WAVE 1 - UP - {}'.format(date, high))
                             pass
                         else:
-                            self.wave_1_high = high
-                            self.wave_1_length = self.wave_length(close, self.wave_1_start)
+                            self.wave_1_length = self.wave_length(prior_close, self.wave_1_start)
                             self.end_wave_one()
-                            print('{} - WAVE 1 - ENDED - {} - LENGTH - {}'.format(date, close, self.wave_1_length))
+                            print('{} - WAVE 1 - ENDED - {} - LENGTH - {}'.format(date, prior_close, self.wave_1_length))
 
                     elif self.correction_1:
                         
@@ -106,7 +110,7 @@ class ElliotWave:
                                 print('{} - CORRECTION 1 DOWN - {}'.format(date, close))
                                 pass
                         else:
-                            self.end_correction_one()
+                            self.end_correction_one(prior_close)
                             print('{} - CORRECTION 1 ENDED - {}'.format(date, close))
 
                     elif self.wave_2:
@@ -114,11 +118,11 @@ class ElliotWave:
                         # Wave three often extends wave one by a ratio of 1.618:1.
 
                         if up:
+                            self.wave_2_high = high
                             print('{} - WAVE 2 - UP - {}'.format(date, close))
                             pass
                         else:
-                            self.wave_2_high = high
-                            self.wave_2_length = self.wave_length(close, self.wave_2_start)
+                            self.wave_2_length = self.wave_length(prior_close, self.wave_2_start)
 
                             if self.wave_2_length < self.wave_1_length:
                                 self.reset()  
@@ -140,7 +144,7 @@ class ElliotWave:
                                 print('{} - CORRECTION 2 DOWN - {}'.format(date, close))
                                 pass
                         else:
-                            self.end_correction_two()
+                            self.end_correction_two(prior_close)
                             print('{} - CORRECTION 2 ENDED - {}'.format(date, close))
                             print('------------------LAUNCH!!!------------------')
 
@@ -153,7 +157,8 @@ class ElliotWave:
                             print('{} - WAVE 3 - UP - {}'.format(date, close))
                             pass
                         else:
-                            self.wave_3_length = self.wave_length(close, self.wave_3_start)
+                            self.wave_3_length = self.wave_length(prior_close, self.wave_3_start)
+                            self.potential_waves.append({'start':self.start_date, 'end':self.bars.index[i]})
                             print('END OF ELLIOT WAVE - {}'.format(self.wave_3_length))
                             self.reset()
 
@@ -166,6 +171,7 @@ class ElliotWave:
                             self.wave_1 = True
                             self.wave_1_start = self.bars.loc[self.bars.index[i-3], 'Close']
                             self.elliott_wave = True
+                            self.start_date = self.bars.index[i]
                             print('{} - WAVE 1 STARTED - {}'.format(date, close))
                         else:
                             print('UP'.format(date, close))
